@@ -31,26 +31,33 @@ class Macadamia:
 		return buffer.getvalue()
 
 	def tor2magnet(self, seed):
-		meta = bencode.bdecode(seed)
-		contents_hash = bencode.bencode(meta['info'])
-		digest = hashlib.sha1(contents_hash).digest()
-		b32hash = base64.b32encode(digest)
-		params = {'xt': 'urn:btih:%s' % b32hash,
-			  'dn': meta['info']['name']}
+		try:
+			meta = bencode.bdecode(seed)
+			contents_hash = bencode.bencode(meta['info'])
+			digest = hashlib.sha1(contents_hash).digest()
+			b32hash = base64.b32encode(digest)
+			params = {'xt': 'urn:btih:%s' % b32hash,
+				  'dn': meta['info']['name']}
 
-		announces = ''
-		for announce in meta['announce-list']:
-			announces += '&' + urllib.urlencode({'tr': announce[0]})
+			announces = ''
+			for announce in meta['announce-list']:
+				announces += '&' + urllib.urlencode({'tr': announce[0]})
 
-		params = urllib.urlencode(params) + announces
-		magnet = "magnet:?%s" % params
-		return {"name": meta['info']['name'],
-				"magnet": magnet}
+			params = urllib.urlencode(params) + announces
+			magnet = "magnet:?%s" % params
+			return {"name": meta['info']['name'],
+					"magnet": magnet}
+		except:
+			return {"name": "", "magnet": ""}
 
-	def addTorrent(self, host, seed):
+	def addTorrent(self, host, title, seed):
 		torrentInfo = self.tor2magnet(seed)
+		torrentInfo["title"] = title
 		torrentInfo["binary"] = seed
 		torrentInfo["hostedBy"] = host
+		if torrentInfo["name"] == "":
+			torrentInfo["name"] = "".join(i for i in title if i not in "\/:*?<>|")
+
 		self.MAGNETS.append(torrentInfo)
 
 	def getHostedSites(self):
@@ -61,7 +68,9 @@ class Macadamia:
 		return string.join(sites, ", ")
 
 	def export(self, argument):
-		if len(argument) - argument.rfind(".rss") == 3 :
+		if len(argument) == 0 :
+			self.exportRss("")
+		elif len(argument) - argument.rfind(".rss") == 3 :
 			self.exportRss(argument)
 		elif len(argument) - argument.rfind("/") == 1 :
 			for entry in self.MAGNETS:

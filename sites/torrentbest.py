@@ -43,7 +43,7 @@ def do_collect(filtered):
 		seedUrl = seed_0.replace("{ID}", anchorInfo["dataId"])
 
 		collector.retrieve(articleUrl)
-		collector.addTorrent(HOSTNAME, collector.retrieve(seedUrl))
+		collector.addTorrent(HOSTNAME, anchorInfo["title"], collector.retrieve(seedUrl))
 
 def do(root):
 	global collector, article_0, seed_0
