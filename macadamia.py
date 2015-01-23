@@ -50,6 +50,13 @@ class Macadamia:
 		except:
 			return {"name": "", "magnet": ""}
 
+	def checkTorrent(self, seed):
+		magicCode = seed[0:2]
+		if magicCode == "d8":
+			return True
+		else:
+			return False
+
 	def addTorrent(self, host, title, seed):
 		torrentInfo = self.tor2magnet(seed)
 		torrentInfo["title"] = title
