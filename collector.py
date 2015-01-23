@@ -13,8 +13,8 @@ myMagnets._from("gwtorrent")
 myMagnets._from("torrentbest")
 
 # Export as a torrent files into the directory
-#myMagnets.export("./example/")
+myMagnets.export("./example/")
 # Export as a rss file
-#myMagnets.export("example.rss")
+myMagnets.export("example.rss")
 # Export screen
 myMagnets.export("")
