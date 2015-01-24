@@ -77,9 +77,13 @@ class Macadamia:
 	def export(self, argument):
 		if len(argument) == 0 :
 			self.exportRss("")
-		elif len(argument) - argument.rfind(".rss") == 3 :
+		elif len(argument) - argument.rfind(".rss") == 4 :
 			self.exportRss(argument)
 		elif len(argument) - argument.rfind("/") == 1 :
+			if os.path.isdir(argument) == False:
+				print "Invalid exporting directory ..."
+				return False
+
 			for entry in self.MAGNETS:
 				fd = open(argument + entry["name"] + ".torrent", "wb")
 				fd.write(entry["binary"])
