@@ -4,6 +4,7 @@ import os, sys
 import string, re, base64
 import bencode, hashlib
 import urllib, pycurl
+import BaseHTTPServer
 from StringIO import StringIO
 from sites import *
 from bs4 import BeautifulSoup
@@ -118,3 +119,26 @@ class Macadamia:
 			fd = open(rssFile, "w")
 			fd.write(rssData.encode("utf8"))
 			fd.close()
+
+class MacadamiaServer(BaseHTTPServer.BaseHTTPRequestHandler):
+	def do_GET(self):
+		keyword = self.path[1:]
+
+		if keyword == "favicon.ico":
+			self.send_response(404)
+			self.end_headers()
+		elif len(keyword) < 1:
+			self.send_response(403)
+			self.end_headers()
+		else:
+			self.send_response(200)
+			self.end_headers()
+			keyword = urllib.unquote(keyword)
+
+			# FIXME: Wanna do this job at class outside
+			Seeds = Macadamia(keyword)
+			# Retrieve torrent from seeder sites
+			Seeds._from("gwtorrent")
+			Seeds._from("torrentbest")
+
+			self.wfile.write(Seeds.export(0).encode("utf8"))
