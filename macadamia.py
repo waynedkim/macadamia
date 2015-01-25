@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 class Macadamia:
 	def __init__(self, keyword):
-		self.MAGNETS = []
+		self.BASKET = []
 		self.KEYWORD = keyword
 
 	def _from(self, siteName):
@@ -66,34 +66,35 @@ class Macadamia:
 		if torrentInfo["name"] == "":
 			torrentInfo["name"] = "".join(i for i in title if i not in "\/:*?<>|")
 
-		self.MAGNETS.append(torrentInfo)
+		self.BASKET.append(torrentInfo)
 
 	def getHostedSites(self):
 		sites = set()
-		for entry in self.MAGNETS:
+		for entry in self.BASKET:
 			sites.add(entry["hostedBy"])
 
 		return string.join(sites, ", ")
 
-	def export(self, argument):
-		if len(argument) == 0 :
-			self.exportRss("")
-		elif len(argument) - argument.rfind(".rss") == 4 :
-			self.exportRss(argument)
-		elif len(argument) - argument.rfind("/") == 1 :
-			if os.path.isdir(argument) == False:
-				print "Invalid exporting directory ..."
-				return False
+	def _basket(self):
+		return self.exportRss()
 
-			for entry in self.MAGNETS:
-				fd = open(argument + entry["name"] + ".torrent", "wb")
-				fd.write(entry["binary"])
-				fd.close()
-		else :
-			self.exportRss("")
+	def store_rss(self, rss):
+		fd = open(rss, "w")
+		fd.write(self.exportRss().encode("utf8"))
+		fd.close()
 
-	def exportRss(self, rssFile):
-		print "Exporting ..."
+	def store_in(self, here):
+		if os.path.isdir(here) == False:
+			print "Invalid exporting directory ..."
+			return False
+
+		for entry in self.BASKET:
+			fd = open(here + entry["name"] + ".torrent", "wb")
+			fd.write(entry["binary"])
+			fd.close()
+
+	def exportRss(self):
+		print "Transforming in RSS ..."
 		doc = BeautifulSoup("<rss version=\"2.0\"></rss>", "xml")
 		doc.rss.append(doc.new_tag("channel"))
 		doc.rss.channel.append(doc.new_tag("title"))
@@ -101,7 +102,7 @@ class Macadamia:
 		doc.rss.channel.title.insert(0, "Macadamia: RSS for \"" + self.KEYWORD + "\"")
 		doc.rss.channel.description.insert(0, "Macadamia generated RSS for \"" + self.KEYWORD + "\" searched from " + self.getHostedSites())
 
-		for entry in self.MAGNETS:
+		for entry in self.BASKET:
 			item = doc.new_tag("item");
 			item.append(doc.new_tag("title"))
 			item.append(doc.new_tag("link"))
@@ -112,13 +113,7 @@ class Macadamia:
 			doc.rss.channel.append(item)
 
 		rssData = doc.prettify()
-
-		if rssFile == "" :
-			print rssData
-		else :
-			fd = open(rssFile, "w")
-			fd.write(rssData.encode("utf8"))
-			fd.close()
+		return rssData
 
 class MacadamiaServer(BaseHTTPServer.BaseHTTPRequestHandler):
 	def do_GET(self):
@@ -141,4 +136,4 @@ class MacadamiaServer(BaseHTTPServer.BaseHTTPRequestHandler):
 			Seeds._from("gwtorrent")
 			Seeds._from("torrentbest")
 
-			self.wfile.write(Seeds.export(0).encode("utf8"))
+			self.wfile.write(Seeds._basket().encode("utf8"))
