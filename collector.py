@@ -1,20 +1,44 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
-import sys, macadamia
+import sys
+import argparse
+import macadamia
+import BaseHTTPServer
 
-if len(sys.argv) != 2 :
-	print " * Usage: " + sys.argv[0] + " KEYWORD\n"
-	sys.exit(1)
+def run_as_server():
+	PORT = 8080
+	Server = BaseHTTPServer.HTTPServer
+	httpd = Server(("", PORT), macadamia.MacadamiaServer)
 
-myMagnets = macadamia.Macadamia(sys.argv[1])
+	while True:
+		try:
+			httpd.serve_forever()
+		except KeyboardInterrupt:
+			break
 
-# Retrieve torrent from seeder sites
-myMagnets._from("gwtorrent")
-myMagnets._from("torrentbest")
+def run_instantly(keyword):
+	Seeds = macadamia.Macadamia(keyword)
 
-# Export as a torrent files into the directory
-myMagnets.store_in("./example/")
-# Export as a rss file
-myMagnets.store_rss("example.rss")
-# Export screen
-print myMagnets._basket()
+	# Retrieve torrent from seeder sites
+	Seeds._from("gwtorrent")
+	Seeds._from("torrentbest")
+
+	# Export screen
+	print Seeds._basket()
+	# Export as a torrent files into the directory
+	Seeds.store_in("./example/")
+	# Export as a rss file
+	Seeds.store_rss("example.rss")
+
+options = argparse.ArgumentParser(description="Macadamia: Automatic torrent seed collector")
+group = options.add_mutually_exclusive_group(required=True)
+group.add_argument("--server", action="store_true", help="run collector as rss server")
+group.add_argument("--keyword", action="store", help="instant search with given keyword")
+args = options.parse_args()
+
+if args.server == True:
+	run_as_server()
+elif len(args.keyword) > 0:
+	run_instantly(args.keyword)
+else:
+	options.print_help()
