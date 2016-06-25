@@ -1,12 +1,14 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 import os, sys
+sys.path.insert(0, os.getcwd())
+
 import string, re, base64
 import bencode, hashlib
 import urllib, pycurl
+from sites import *
 import BaseHTTPServer
 from StringIO import StringIO
-from sites import *
 from bs4 import BeautifulSoup
 
 class Macadamia:

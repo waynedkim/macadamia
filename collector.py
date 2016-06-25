@@ -20,13 +20,13 @@ def run_instantly(keyword):
 	Seeds = macadamia.Macadamia(keyword)
 
 	# Retrieve torrent from seeder sites
-	Seeds._from("gwtorrent")
-	Seeds._from("torrentbest")
+	Seeds._from("tosarang2")
 
 	# Export screen
 	print Seeds._basket()
 	# Export as a torrent files into the directory
-	Seeds.store_in("./example/")
+	#Seeds.store_in("./example/")
+	Seeds.store_in("./seeds/")
 	# Export as a rss file
 	Seeds.store_rss("example.rss")
 
